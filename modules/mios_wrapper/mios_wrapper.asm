@@ -251,7 +251,15 @@ USER_MPROC_NotifyReceivedByte
 USER_MIDI_NotifyTx
 	;; too time consuming for C programs --- should be handled so fast as
 	;; possible and therefore serviced in assembler
+
+	;; disabled by default
+	;; enable it if external function is available
+#ifdef ENABLE_MIDI_NOTIFY_TX
+	extern	_MIDI_NotifyTx
+	goto	_MIDI_NotifyTx
+#else
 	return
+#endif
 
 ;; --------------------------------------------------------------------------
 ;;  This function is called by MIOS when a MIDI byte has been received.
@@ -265,7 +273,15 @@ USER_MIDI_NotifyTx
 USER_MIDI_NotifyRx
 	;; too time consuming for C programs --- should be handled so fast as
 	;; possible and therefore serviced in assembler
+
+	;; disabled by default
+	;; enable it if external function is available
+#ifdef ENABLE_MIDI_NOTIFY_RX
+	extern	_MIDI_NotifyRx
+	goto	_MIDI_NotifyRx
+#else
 	return
+#endif
 
 ;; --------------------------------------------------------------------------
 ;;  This function is called by MIOS when an button has been toggled
