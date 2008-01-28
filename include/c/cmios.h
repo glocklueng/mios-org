@@ -22,6 +22,12 @@
 #define MIOS_MIDI_MERGER_MBLINK_EP	0x02
 #define MIOS_MIDI_MERGER_MBLINK_FP	0x03
 
+#define MIOS_ENC_MODE_NON_DETENTED	0x00
+#define MIOS_ENC_MODE_DETENTED		0x80
+#define MIOS_ENC_MODE_DETENTED1		0x80
+#define MIOS_ENC_MODE_DETENTED2		0x81
+#define MIOS_ENC_MODE_DETENTED3		0x82
+
 #define MIOS_ENC_SPEED_SLOW		0x00
 #define MIOS_ENC_SPEED_NORMAL		0x01
 #define MIOS_ENC_SPEED_FAST		0x02
@@ -36,6 +42,20 @@
 #define MIOS_LCD_TYPE_GLCD_CUSTOM	0x07
 
 #define MIOS_GLCD_FONT			0x7cfc
+
+/*** macro for creating encoder table ****************************************/
+#define MIOS_ENC_TABLE \
+        const unsigned int __at(0x3280) mios_enc_pin_table[64] =
+
+#define MIOS_ENC_ENTRY(sr, din, mode)   ((mode) << 8) | ((din) + 8*((sr)-1))
+#define MIOS_ENC_EOT                    0xffff
+
+/*** macro for creating midi processing table *********************************/
+#define MIOS_MT_TABLE \
+        const unsigned int __at(0x3080) mios_mproc_event_table[256] =
+
+#define MIOS_MT_ENTRY(evnt0, evnt1)     ((evnt1) << 8) | (evnt0)
+#define MIOS_MT_EOT                     0xffff
 
 /*** structures of the CFG and STAT bytes ************************************/
 typedef union {
