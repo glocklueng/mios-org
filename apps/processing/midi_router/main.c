@@ -17,10 +17,12 @@
 #include <cmios.h>
 #include <pic18fregs.h>
 
+#include <midi_rxtx_leds.h>
+#include <iic_midi.h>
+
 #include "main.h"
-#include "iic_midi.h"
+#include "iic_midi_tick.h"
 #include "int_midi.h"
-#include "midi_rxtx_leds.h"
 #include "router.h"
 
 /////////////////////////////////////////////////////////////////////////////
