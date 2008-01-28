@@ -10,7 +10,7 @@
 ; These hooks are called by the MIOS wrapper on incoming/outgoing MIDI bytes
 ; They have to be enabled in the Makefile by adding:
 ;   -DENABLE_MIDI_NOTIFY_RX -DENABLE_MIDI_NOTIFY_TX
-; to MIOS_WRAPPER_DEFINES
+; to IIC_MIDI_DEFINES
 ;
 ; See the function headers for additional details
 ;
