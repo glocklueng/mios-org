@@ -55,13 +55,6 @@ IMPORTANT --- IMPORTANT --- IMPORTANT --- IMPORTANT --- IMPORTANT --- IMPORTANT
 
 ===============================================================================
 
-Modifications in MIOS Wrapper:
-   - added encoder to mios_wrapper/mios_tables.inc
-   - added _MIDI_RXTX_NotifyTx call to mios_wrapper/mios_wrapper.asm
-   - added _MIDI_RXTX_NotifyRx call to mios_wrapper/mios_wrapper.asm
-
-===============================================================================
-
 Description about the most important files:
 
    - main.c: the main program with all MIOS hooks
