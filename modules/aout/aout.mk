@@ -1,5 +1,6 @@
+# defines the rule for creating the aout.o object
 
-CC_INCLUDE += -I $(MIOS_PATH)/modules/aout 
+SDCC_INCLUDE += -I $(MIOS_PATH)/modules/aout 
 
 $(OUTDIR)/aout.o: $(MIOS_PATH)/modules/aout/aout.c
-	$(CC) $(CCFLAGS) $(SDCC_DEFINES) $< -o $(OUTDIR)/
+	$(SDCC) $(SDCC_FLAGS) $(SDCC_DEFINES) $<
