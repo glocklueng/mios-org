@@ -15,10 +15,10 @@ SDCC=perl $(MIOS_BIN_PATH)/mios-sdcc.pl -c
 GPLINK=gplink
 
 # default flags for GPASM
-GPASM_FLAGS=-p $(PROCESSOR) $(GPASM_INCLUDE) -DDEBUG_MODE=0
+GPASM_FLAGS+=-p $(PROCESSOR) $(GPASM_INCLUDE) -DDEBUG_MODE=0
 
 # default flags for SDCC
-SDCC_FLAGS=-mpic16 -$(PROCESSOR) $(SDCC_INCLUDE) --fommit-frame-pointer --optimize-goto --optimize-cmp --disable-warning 85 --obanksel=2 -pleave-reset-vector
+SDCC_FLAGS+=-mpic16 -$(PROCESSOR) $(SDCC_INCLUDE) --fommit-frame-pointer --optimize-goto --optimize-cmp --disable-warning 85 --obanksel=2 -pleave-reset-vector
 
 # rule to create a .hex file
 # note: currently we always require a "cleanall", since dependencies (e.g. on .h files) are not properly managed
