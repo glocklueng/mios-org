@@ -26,7 +26,6 @@
 // Prototypes
 /////////////////////////////////////////////////////////////////////////////
 extern void IIC_MIDI_Init(void) __wparam;
-extern void IIC_MIDI_Tick(void) __wparam;
 extern unsigned char IIC_MIDI_Receive(unsigned char slave) __wparam;
 extern unsigned char IIC_MIDI_Transmit(unsigned char port, unsigned char ptype, unsigned char evnt0, unsigned char evnt1, unsigned char evnt2) __wparam;
 
