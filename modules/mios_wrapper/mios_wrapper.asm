@@ -33,19 +33,19 @@
 ;; ==========================================================================
 
 ;; ---[ configuration table for MIDI processor ]---
-#ifndef DONT_INCLUDE_MIOS_TABLES_MT
-#include "mios_tables_mt.inc"
+#ifndef DONT_INCLUDE_MIOS_MT_TABLE
+#include "mios_mt_table.inc"
 #endif
 
 ;; ---[ configuration table for rotary encoders ]---
-#ifndef DONT_INCLUDE_MIOS_TABLES_ENC
-#include "mios_tables_enc.inc"
+#ifndef DONT_INCLUDE_MIOS_ENC_TABLE
+#include "mios_enc_table.inc"
 #endif
 
 	org	0x3300		; never change the origin!
 
 ;; ---[ Custom LCD driver ]---
-#ifndef MIOS_WRAPPER_DONT_INCLUDE_APP_LCD
+#ifndef DONT_INCLUDE_APP_LCD
 #include "app_lcd.inc"
 #endif
 
