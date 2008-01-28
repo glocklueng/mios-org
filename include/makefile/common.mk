@@ -6,10 +6,10 @@ PROJECT=project
 OUTDIR=_output
 
 # GPASM execution via wrapper
-GPASM=perl $(MIOS_BIN_PATH)/mios-gpasm.pl -c -o $(OUTDIR)/
+GPASM=perl $(MIOS_BIN_PATH)/mios-gpasm.pl -c
 
 # SDCC execution via wrapper
-SDCC=perl $(MIOS_BIN_PATH)/mios-sdcc.pl -c -o $(OUTDIR)/
+SDCC=perl $(MIOS_BIN_PATH)/mios-sdcc.pl -c
 
 # GPLINK execution (w/o wrapper yet)
 GPLINK=gplink
@@ -28,17 +28,17 @@ $(PROJECT).hex: cleanall mk_outdir $(addprefix $(OUTDIR)/, $(OBJS))
 
 # default rule for compiling .c programs
 $(OUTDIR)/%.o: %.c
-	$(SDCC) $(SDCC_FLAGS) $(SDCC_DEFINES) $<
+	$(SDCC) $(SDCC_FLAGS) $(SDCC_DEFINES) $< -o $@
 
 # default rule for compiling .asm programs
 # we expect, that they don't need to be converted through the wrapper
 $(OUTDIR)/%.o: %.asm
-	$(GPASM) $(GPASM_FLAGS) $<
+	$(GPASM) $(GPASM_FLAGS) $< -o $@
 
 # default rule for compiling .s programs (these are assembler programs as well)
 # for .s we expect, that they need to be converted through the wrapper
 $(OUTDIR)/%.o: %.s
-	$(GPASM) $(GPASM_FLAGS) $<
+	$(GPASM) $(GPASM_FLAGS) $< -o $@
 
 # include mios_wrapper related rules
 include $(MIOS_PATH)/modules/mios_wrapper/mios_wrapper.mk
