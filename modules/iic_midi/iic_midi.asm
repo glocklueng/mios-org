@@ -49,6 +49,8 @@
 ;   IIC_MIDI_BASE_ADDR: IIC base address
 ;   IIC_MIDI_MAX_NUMBER: max number of IIC slaves
 ;   IIC_MIDI_USE_RI: use Receive Interrupt lines for faster polling
+;   *_RI_N_SLAVEx: allow to change the pinning
+;   IIC_MIDI_DONT_USE_J5_INPUTS: if J5 of core module shouldn't be used for RI signals
 ; ==========================================================================
 
 ;; base address and max number of IIC slaves
@@ -65,23 +67,51 @@
 #define IIC_MIDI_USE_RI		1
 #endif
 
+;; don't use J5 of the core module as digital inputs or RI signals
+#ifndef IIC_MIDI_DONT_USE_J5_INPUTS
+#define IIC_MIDI_DONT_USE_J5_INPUTS 0
+#endif
+
 ;; RI_N lines (note: ADC will be turned off in IIC_MIDI_Init)
-;; TODO: make this more flexible!
+#ifndef PORT_RI_N_SLAVE0
 PORT_RI_N_SLAVE0	EQU     PORTA
+#endif
+#ifndef TRIS_RI_N_SLAVE0
 TRIS_RI_N_SLAVE0	EQU	TRISA
+#endif
+#ifndef PIN_RI_N_SLAVE0
 PIN_RI_N_SLAVE0		EQU     0
+#endif
 
+#ifndef PORT_RI_N_SLAVE1
 PORT_RI_N_SLAVE1	EQU     PORTA
+#endif
+#ifndef TRIS_RI_N_SLAVE1
 TRIS_RI_N_SLAVE1	EQU	TRISA
+#endif
+#ifndef PIN_RI_N_SLAVE1
 PIN_RI_N_SLAVE1		EQU     1
+#endif
 
+#ifndef PORT_RI_N_SLAVE2
 PORT_RI_N_SLAVE2	EQU     PORTA
+#endif
+#ifndef TRIS_RI_N_SLAVE2
 TRIS_RI_N_SLAVE2	EQU	TRISA
+#endif
+#ifndef PIN_RI_N_SLAVE2
 PIN_RI_N_SLAVE2		EQU     2
+#endif
 
+#ifndef PORT_RI_N_SLAVE3
 PORT_RI_N_SLAVE3	EQU     PORTA
+#endif
+#ifndef TRIS_RI_N_SLAVE3
 TRIS_RI_N_SLAVE3	EQU	TRISA
+#endif
+#ifndef PIN_RI_N_SLAVE3
 PIN_RI_N_SLAVE3		EQU     3
+#endif
 
 ; ==========================================================================
 
@@ -141,14 +171,16 @@ IIC_MIDI_Init
 	call	MIOS_IIC_Stop
 
 #if IIC_MIDI_USE_RI
+#if IIC_MIDI_DONT_USE_J5_INPUTS
 	;; disable the ADC which allocates the analog pins
 	;; these pins are used to poll the RI_N lines
-#ifdef __18F4550
-	movlw	0x0f		; PIC18F4550
+#if PIC_DERIVATIVE_NEW_ADC      ; defined in mios.h 
+	movlw	0x0f		; PIC18F4550, 4685, etc...
 #else
 	movlw	0x07		; PIC18F452
 #endif
 	movwf	ADCON1
+#endif
 
 	;; enable inputs
 	bsf	TRIS_RI_N_SLAVE0, PIN_RI_N_SLAVE0
