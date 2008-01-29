@@ -1,14 +1,20 @@
 
-GPASMFLAGS = -p 18f4685 -I $(MIOS_PATH)/include/asm -I ./src 
+# define the processor here
+PROCESSOR = p18f4685
 
+# default flags to GPASM here
+GPASM_FLAGS   = 
+
+# include pathes (more will be added by asm_only.mk files)
+GPASM_INCLUDE = 
+
+# optional defines that should be passed to GPASM
+GPASM_DEFINES = 
+
+# default rule that defines the .hex files which should be created
+# note: always require a "cleanall", since dependencies (e.g. on .h and .inc files) are not properly declared
 all: cleanall setup_6581.hex setup_8580.hex setup_tk.hex setup_mb6582.hex
 
-%.hex: %.asm
-	gpasm $(GPASMFLAGS) $<
 
-clean:
-	rm -f *.cod *.lst *.err
-
-cleanall: clean
-	rm -f *.hex
-
+# include the asm_only.mk file
+include $(MIOS_PATH)/include/makefile/asm_only.mk
