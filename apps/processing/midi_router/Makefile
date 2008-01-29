@@ -1,17 +1,29 @@
 
-PROCESSOR=p18f452
-OBJS=pic18f452.o mios_wrapper.o main.o iic_midi.o iic_midi_tick.o int_midi.o midi_rxtx_leds.o router.o
+# define the processor, linker file and project name
+PROCESSOR = p18f452
+LKR_FILE  = $(MIOS_PATH)/etc/lkr/$(PROCESSOR).lkr
+PROJECT   = project
 
-GPASM_INCLUDE=-I $(MIOS_PATH)/include/asm
+# list of objects that should be created and linked
+OBJS = pic18f452.o mios_wrapper.o main.o iic_midi.o iic_midi_tick.o int_midi.o midi_rxtx_leds.o router.o
 
-MIOS_WRAPPER_DEFINES=-DSTACK_HEAD=0x37f -DSTACK_IRQ_HEAD=0x33f \
-                     -DDONT_INCLUDE_MIOS_ENC_TABLE \
-                     -DENABLE_MIDI_NOTIFY_RX -DENABLE_MIDI_NOTIFY_TX
+# include pathes (more will be added by .mk files)
+GPASM_INCLUDE = -I.
+SDCC_INCLUDE  = -I.
 
-SDCC_INCLUDE=-I $(MIOS_PATH)/include/c  -I.
-SDCC_DEFINES=-DDEBUG_MODE=0
-GPLINK_FLAGS=-s $(MIOS_PATH)/etc/lkr/$(PROCESSOR).lkr
+# optional defines which should be passed to GPASM/SDCC
+GPASM_DEFINES = -DDEBUG_MODE=0
+SDCC_DEFINES  = -DDEBUG_MODE=0
 
+# pass parameters to MIOS wrapper
+MIOS_WRAPPER_DEFINES = -DSTACK_HEAD=0x37f -DSTACK_IRQ_HEAD=0x33f \
+                       -DDONT_INCLUDE_MIOS_ENC_TABLE \
+                       -DENABLE_MIDI_NOTIFY_RX -DENABLE_MIDI_NOTIFY_TX
+
+
+# include the common.mk file
 include $(MIOS_PATH)/include/makefile/common.mk
+
+# include additional module specific makefile rules
 include $(MIOS_PATH)/modules/midi_rxtx_leds/midi_rxtx_leds.mk
 include $(MIOS_PATH)/modules/iic_midi/iic_midi.mk
