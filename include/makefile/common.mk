@@ -9,6 +9,7 @@
 #   - GPASM_DEFINES         e.g.: -DDEBUG_MODE=0
 #   - SDCC_WRAPPER_DEFINES  e.g.: -DDEBUG_MODE=0
 #   - MIOS_WRAPPER_DEFINES  e.g.: -DSTACK_HEAD=0x37f -DSTACK_IRQ_HEAD=0x33f
+#   - DIST      e.g.: ./
 #
 # Application specific source files (.c, .asm, .s) have to be located in ./ or ./src,
 # Modules can be added by including .mk files from $MIOS_PATH/modules/*/*.mk
@@ -50,8 +51,13 @@ SDCC_FLAGS += -mpic16 -$(PROCESSOR) --fommit-frame-pointer --optimize-goto --opt
 # add default flags for GPLINK
 GPLINK_FLAGS += -s $(LKR_FILE)
 
+# add files for distribution
+DIST += $(MIOS_PATH)/include/makefile/common.mk $(MIOS_PATH)/include/c $(MIOS_PATH)/include/asm
+DIST += $(LKR_FILE)
+DIST += $(MIOS_BIN_PATH)/mios-gpasm.pl $(MIOS_BIN_PATH)/mios-sdcc.pl 
+
 # rule to create a .hex file
-# note: currently we always require a "cleanall", since dependencies (e.g. on .h files) are not properly managed
+# note: currently we always require a "cleanall", since dependencies (e.g. on .h files) are not properly declared
 # later we could try it w/o "cleanall", and propose the usage of this step to the user
 $(PROJECT).hex: cleanall mk_outdir $(addprefix $(OUTDIR)/, $(OBJS))
 	$(GPLINK) $(GPLINK_FLAGS) -m -o $(PROJECT).hex $(addprefix $(OUTDIR)/, $(OBJS))
@@ -98,3 +104,12 @@ clean:
 # clean temporary files + project image
 cleanall: clean
 	rm -rf *.hex
+
+# creating a distribution (release) package
+dist: clean
+#	echo $(foreach dir, $(DIST), `echo 'XXX $(dir)' | sed -e "s/$MIOS_BIN_PATH/.\/bin/"` )
+	# damned, this doesn't work under windows, and "basename" doesn't work properly as well
+	# due to <device-name>:\...
+	# we should prefer a perl script (for more flexibility)
+	# However, here are the DIST pathes:
+	echo $(DIST)
