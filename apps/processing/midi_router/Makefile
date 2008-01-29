@@ -28,6 +28,6 @@ DIST = ./
 # include the common.mk file
 include $(MIOS_PATH)/include/makefile/common.mk
 
-# include additional module specific makefile rules
+# include additional module specific make rules
 include $(MIOS_PATH)/modules/midi_rxtx_leds/midi_rxtx_leds.mk
 include $(MIOS_PATH)/modules/iic_midi/iic_midi.mk
