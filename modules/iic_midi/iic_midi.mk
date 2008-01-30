@@ -1,3 +1,4 @@
+# $Id$
 # defines the rule for creating the iic_midi.o object
 
 # (only SDCC include path needs to be extended)

@@ -1,3 +1,4 @@
+; $Id$
 ;
 ;  MIDI Driver for MBHP_IIC_MIDI module
 ;
