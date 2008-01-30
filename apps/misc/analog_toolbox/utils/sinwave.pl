@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+# $Id$
 
 printf "const unsigned char sinewave[256] = { ";
 

@@ -1,5 +1,5 @@
-#!/usr/bin/perl
 #!/usr/bin/perl -w
+# $Id$
 #########################################################################################
 #
 # This script converts MIDIbox SID V1 patches to the new MIDIbox SID V2 format
