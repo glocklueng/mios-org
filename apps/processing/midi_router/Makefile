@@ -8,8 +8,8 @@ PROJECT   = project
 OBJS = pic18f452.o mios_wrapper.o main.o iic_midi.o iic_midi_tick.o int_midi.o midi_rxtx_leds.o router.o
 
 # include pathes (more will be added by .mk files)
-GPASM_INCLUDE = -I.
-SDCC_INCLUDE  = -I.
+GPASM_INCLUDE = 
+SDCC_INCLUDE  = 
 
 # optional defines that should be passed to GPASM/SDCC
 GPASM_DEFINES = -DDEBUG_MODE=0
