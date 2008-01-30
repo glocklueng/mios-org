@@ -1,3 +1,4 @@
+// $Id$
 /*
  * Declaration of MIOS variables and functions
  *

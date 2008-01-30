@@ -1,3 +1,5 @@
+; $Id$
+
 MIOS_MIDI_BeginStream                   EQU	0x2c00
 MIOS_MIDI_DeviceIDAutoSet               EQU	0x2c04
 MIOS_MIDI_DeviceIDGet                   EQU	0x2c08

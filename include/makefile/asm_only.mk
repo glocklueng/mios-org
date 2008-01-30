@@ -1,3 +1,4 @@
+# $Id$
 #
 # following variables should be set before including this file:
 #   - PROCESSOR       e.g.: p18f452
