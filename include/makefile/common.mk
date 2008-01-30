@@ -4,10 +4,10 @@
 #   - LKR_FILE  e.g.: $(MIOS_PATH)/etc/lkr/$(PROCESSOR).lkr
 #   - PROJECT   e.g.: project   # (.lst, .cod, .hex, .map will be added automatically)
 #   - OBJS      e.g.: pic18f452.o mios_wrapper.o main.o
-#   - GPASM_INCLUDE         e.g.: -I./ui  # (more include pathes will be added by .mk files)
-#   - SDCC_INCLUDE          e.g.: -I./ui  # (more include pathes will be added by .mk files)
-#   - GPASM_DEFINES         e.g.: -DDEBUG_MODE=0
-#   - SDCC_WRAPPER_DEFINES  e.g.: -DDEBUG_MODE=0
+#   - GPASM_INCLUDE  e.g.: -I./ui  # (more include pathes will be added by .mk files)
+#   - SDCC_INCLUDE   e.g.: -I./ui  # (more include pathes will be added by .mk files)
+#   - GPASM_DEFINES  e.g.: -DDEBUG_MODE=0
+#   - SDCC_DEFINES   e.g.: -DDEBUG_MODE=0
 #   - MIOS_WRAPPER_DEFINES  e.g.: -DSTACK_HEAD=0x37f -DSTACK_IRQ_HEAD=0x33f
 #   - DIST      e.g.: ./
 #
