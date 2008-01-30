@@ -1,3 +1,4 @@
+# $Id$
 
 # define the processor here
 PROCESSOR = p18f4685

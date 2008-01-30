@@ -1,3 +1,4 @@
+; $Id$
 ;
 ; AOUT LC driver
 ; 

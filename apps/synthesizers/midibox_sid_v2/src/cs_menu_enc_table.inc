@@ -1,3 +1,4 @@
+; $Id$
 ;
 ; MIDIbox SID Control Surface Rotary Encoder assign tables
 ;

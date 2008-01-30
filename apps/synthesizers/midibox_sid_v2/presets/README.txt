@@ -1,3 +1,4 @@
+$Id$
 
 This package contains the preset patches for MIDIbox SID V2:
 

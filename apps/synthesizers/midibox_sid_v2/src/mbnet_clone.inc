@@ -1,3 +1,4 @@
+; $Id$
 ;
 ;; MBNet Clone Code -- must be located at the begin of the user flash range
 ;; reserved region: 0x3300-0x3500

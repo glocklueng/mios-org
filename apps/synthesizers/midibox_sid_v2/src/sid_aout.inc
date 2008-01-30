@@ -1,3 +1,4 @@
+; $Id$
 ;
 ; AOUT driver for daisychained MAX525
 ; 

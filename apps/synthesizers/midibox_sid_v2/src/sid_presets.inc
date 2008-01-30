@@ -1,3 +1,4 @@
+; $Id$
 ;
 ; MIDIbox SID
 ; Presets (EEPROM content)

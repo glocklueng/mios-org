@@ -1,3 +1,4 @@
+; $Id$
 ;
 ; Prepared Setup File for 8580 SID
 ;

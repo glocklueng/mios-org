@@ -1,3 +1,4 @@
+; $Id$
 ;
 ;  SID specific MBNET functions and hooks
 ;

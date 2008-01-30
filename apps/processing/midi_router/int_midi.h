@@ -1,3 +1,4 @@
+// $Id$
 /*
  * Header file for internal MIDI Routines
  *

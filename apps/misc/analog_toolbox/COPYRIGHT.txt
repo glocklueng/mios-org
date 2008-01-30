@@ -1,3 +1,4 @@
+$Id$
 
 This application is copyright 2005 by Thorsten Klose and is released 
 under the GNU GPL. This covers all the code included in this

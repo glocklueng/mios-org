@@ -1,3 +1,4 @@
+; $Id$
 ;
 ; Control Surface Menu Tables
 ;

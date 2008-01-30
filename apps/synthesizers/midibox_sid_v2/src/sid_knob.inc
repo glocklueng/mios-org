@@ -1,3 +1,4 @@
+; $Id$
 ;
 ; SID "Knobs" (Adjustable Parameters with Min/Max values) Handling
 ;

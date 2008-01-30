@@ -1,3 +1,4 @@
+; $Id$
 ;
 ; MIOS Application
 ; MIDIbox SID

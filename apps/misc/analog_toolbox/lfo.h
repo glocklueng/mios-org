@@ -1,3 +1,4 @@
+// $Id$
 /*
  * LFO program module definitions
  *

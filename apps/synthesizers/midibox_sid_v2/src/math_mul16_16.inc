@@ -1,3 +1,5 @@
+; $Id$
+
 ;; Multiply 16x16 bit routine from the PIC18F452 datasheet, Chapter 7.2 "8 X 8 HARDWARE MULTIPLIER, Operation"
 
 ;; MUL_R_3:MUL_R_0 = MUL_A_H:MUL_A_L * MUL_B_H:MUL_B_L

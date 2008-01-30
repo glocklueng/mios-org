@@ -1,3 +1,4 @@
+; $Id$
 ;
 ; MIDIbox SID
 ; Routines to play short tunes (when a BankStick is attached/deattached)

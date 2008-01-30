@@ -1,3 +1,5 @@
+; $Id$
+
 ;; the 24 Bit / 16 Bit division routine has been created by Nikolai Golovchenko, 
 ;; and is published at:
 ;; http://www.piclist.org/techref/microchip/math/div/24by16.htm

@@ -1,3 +1,4 @@
+; $Id$
 ;
 ; Control Surface Menu Tables Structures
 ; (outsourced as they are really unreadable ;-)

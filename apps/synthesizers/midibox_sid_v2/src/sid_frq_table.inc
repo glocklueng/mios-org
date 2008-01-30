@@ -1,3 +1,4 @@
+; $Id$
 ;
 ; MIDIbox SID
 ; Frequency Table (refer to the SID spec)

@@ -1,3 +1,4 @@
+; $Id$
 ;
 ; SID Patch Randomizer
 ;

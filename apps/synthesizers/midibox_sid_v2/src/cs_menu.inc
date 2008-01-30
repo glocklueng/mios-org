@@ -1,3 +1,4 @@
+; $Id$
 ;
 ; SID Control Surface Menu Functions
 ;

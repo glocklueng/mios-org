@@ -1,3 +1,4 @@
+; $Id$
 ;
 ; This file contains all special characters used by the application
 ;

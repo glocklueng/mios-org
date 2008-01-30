@@ -1,3 +1,4 @@
+; $Id$
 ;
 ; SID Control Surface Master/Slave SID Functions
 ;

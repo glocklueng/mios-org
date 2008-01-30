@@ -1,3 +1,4 @@
+; $Id$
 ;
 ; Using J5 as analog input
 ; Replaces the MIOS AIN driver for dedicated analog conversion routines

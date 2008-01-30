@@ -1,3 +1,4 @@
+; $Id$
 ;
 ; Individual Setup File for TK's MIDIbox SID
 ;

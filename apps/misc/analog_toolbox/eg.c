@@ -1,3 +1,4 @@
+// $Id$
 /*
  * EG program module
  *

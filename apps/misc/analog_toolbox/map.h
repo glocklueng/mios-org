@@ -1,3 +1,4 @@
+// $Id$
 /*
  * MAP program module definitions
  *

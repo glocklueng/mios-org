@@ -1,3 +1,4 @@
+; $Id$
 ;
 ; MBSID Control Surface CFG menu
 ;

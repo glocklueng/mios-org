@@ -1,3 +1,4 @@
+# $Id$
 
 # define the processor, linker file and project name
 PROCESSOR = p18f452
