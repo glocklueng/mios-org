@@ -1,3 +1,4 @@
+; $Id$
 ;
 ; MIDI Processor Configuaration Table
 ;

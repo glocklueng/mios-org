@@ -1,3 +1,4 @@
+; $Id$
 ;
 ; Configuration Table for Rotary Encoders
 ;

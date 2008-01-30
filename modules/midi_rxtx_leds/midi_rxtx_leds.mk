@@ -1,3 +1,4 @@
+# $Id$
 # defines the rule for creating the midi_rxtx_leds.o object
 
 # (only SDCC include path needs to be extended)

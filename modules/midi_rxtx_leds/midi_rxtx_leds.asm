@@ -1,3 +1,4 @@
+; $Id$
 ;
 ; This file includes helpful functions to monitor the MIDI Rx/Tx activity
 ; --> IO PIN VERSION (no DOUT required) <--

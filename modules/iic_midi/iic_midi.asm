@@ -175,7 +175,7 @@ IIC_MIDI_Init
 #if !IIC_MIDI_DONT_USE_J5_INPUTS
 	;; disable the ADC which allocates the analog pins
 	;; these pins are used to poll the RI_N lines
-#if PIC_DERIVATIVE_NEW_ADC      ; defined in mios.h 
+#if PIC_DERIVATIVE_NEW_ADC      ; defined in mios.h 
 	movlw	0x0f		; PIC18F4550, 4685, etc...
 #else
 	movlw	0x07		; PIC18F452

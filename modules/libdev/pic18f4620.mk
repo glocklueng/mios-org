@@ -1,3 +1,4 @@
+# $Id$
 # defines the rule for creating the pic18f452.o object
 # included from $MIOS_PATH/include/makefile/common.mk
 
