@@ -1,4 +1,4 @@
-// $Id$
+// $ Id $
 /*
  * AOUT program module
  * This module is contains a lot of assembler-optimized code for fastest execution
