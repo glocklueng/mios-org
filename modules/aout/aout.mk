@@ -1,3 +1,4 @@
+# $Id: $
 # defines the rule for creating the aout.o object
 
 SDCC_INCLUDE += -I $(MIOS_PATH)/modules/aout 
