@@ -1,4 +1,4 @@
-// $Id: $
+// $Id$
 /*
  * AOUT program module definitions
  *
