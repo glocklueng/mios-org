@@ -1,3 +1,4 @@
+; $Id: $
 ;
 ; MIOS definition file, part 2
 ; Extents mios.h by some internal definitions

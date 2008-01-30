@@ -1,3 +1,4 @@
+; $Id: $
 ;
 ; MIOS BankStick routines
 ;

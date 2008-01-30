@@ -1,3 +1,4 @@
+; $Id: $
 ;
 ; User vectortable - contains user hooks to the application side
 ;

@@ -1,3 +1,4 @@
+; $Id: $
 ;
 ; MIOS system startup routine
 ;
