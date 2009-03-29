@@ -1,0 +1,224 @@
+/*
+ * MBHP_DMX512 module driver
+ *
+ * ==========================================================================
+ *
+ *  Copyright (C) 2009 Phil Taylor (phil@taylor.org.uk)
+ *  Licensed for personal non-commercial use only.
+ *  All other rights reserved.
+ * 
+ * ==========================================================================
+ */
+
+/////////////////////////////////////////////////////////////////////////////
+// Include files
+/////////////////////////////////////////////////////////////////////////////
+
+#include <mios32.h>
+#include <FreeRTOS.h>
+#include <portmacro.h>
+#include <task.h>
+#include <queue.h>
+#include <semphr.h>
+#include <FreeRTOS.h>
+#include <portmacro.h>
+
+#include "dmx.h"
+
+#define PRIORITY_TASK_DMX		( tskIDLE_PRIORITY + 3 )
+
+#define DMX_UNIVERSE_SIZE	512
+#define DMX_BAUDRATE 250000
+#define BREAK_BAUDRATE 90900	// Baud rate used for sending a nice long break!
+//	ANSI Spec: Break: 176uS-352uS MAB 12uS-88uS IB-Gab < 32uS */
+#define DMX_MAB_DELAY		38
+
+#define DMX_IDLE	0
+#define DMX_BREAK 1
+#define DMX_START_CODE 2
+#define DMX_SENDING	3
+
+#define DMX_TX_PORT     GPIOA
+#define DMX_TX_PIN      GPIO_Pin_9
+#define DMX_RX_PORT     GPIOA
+#define DMX_RX_PIN      GPIO_Pin_10
+#define DMX             USART1
+#define DMX_IRQ_CHANNEL USART1_IRQChannel
+#define DMX_IRQHANDLER_FUNC void USART1_IRQHandler(void)
+
+xSemaphoreHandle xDMXSemaphore;
+
+/////////////////////////////////////////////////////////////////////////////
+// Local variables
+/////////////////////////////////////////////////////////////////////////////
+static u8 dmx_tx_buffer[DMX_UNIVERSE_SIZE]; // Buffer for outgoing DMX universe.
+
+static u16 dmx_baudrate_brr;		// This stores the contents of the BRR register for DMX sending
+static u16 break_baudrate_brr;	// This is the BRR register when sending a break.
+static volatile u16	dmx_current_channel;
+static volatile u8 dmx_state;
+
+static void TASK_DMX(void *pvParameters);
+
+////////////////////////////////////////////////////////////////////////////
+//! Initialize DMX Interface
+//! \param[in] mode currently only mode 0 supported
+//! \return < 0 if initialisation failed
+/////////////////////////////////////////////////////////////////////////////
+s32 DMX_Init(u32 mode)
+{
+
+  // currently only mode 0 supported
+  if( mode != 0 )
+    return -1; // unsupported mode
+  // configure UART pins
+	GPIO_InitTypeDef GPIO_InitStructure;
+  GPIO_StructInit(&GPIO_InitStructure);
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+
+  // outputs as push-pull
+  GPIO_InitStructure.GPIO_Pin = DMX_TX_PIN;
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+  GPIO_Init(DMX_TX_PORT, &GPIO_InitStructure);	
+	
+  // inputs with internal pull-up
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
+  GPIO_InitStructure.GPIO_Pin = DMX_RX_PIN;
+  GPIO_Init(DMX_RX_PORT, &GPIO_InitStructure);
+	
+  // enable USART clock
+  RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
+
+	// Set DMX data format and baud rate (8 bit, 2 stop bits and 250000 baud)
+  USART_InitTypeDef USART_InitStructure;
+  USART_InitStructure.USART_WordLength = USART_WordLength_8b;
+  USART_InitStructure.USART_StopBits = USART_StopBits_2;
+  USART_InitStructure.USART_Parity = USART_Parity_No;
+  USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+  USART_InitStructure.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;
+
+  USART_InitStructure.USART_BaudRate = BREAK_BAUDRATE;
+  USART_Init(DMX, &USART_InitStructure);
+  break_baudrate_brr=DMX->BRR;	// Store the BRR value for quick changes.
+
+  USART_InitStructure.USART_BaudRate = DMX_BAUDRATE;
+  USART_Init(DMX, &USART_InitStructure);
+  dmx_baudrate_brr=DMX->BRR;	// Store the BRR value for quick changes.
+	
+	// configure and enable UART interrupts
+  NVIC_InitTypeDef NVIC_InitStructure;
+
+  NVIC_InitStructure.NVIC_IRQChannel = DMX_IRQ_CHANNEL;
+  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = MIOS32_IRQ_UART_PRIORITY; // defined in mios32_irq.h
+  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+  NVIC_Init(&NVIC_InitStructure);
+  USART_ITConfig(DMX, USART_IT_RXNE, ENABLE);
+	USART_Cmd(DMX, ENABLE); 
+	dmx_state=DMX_IDLE;
+	dmx_current_channel=0;
+	// Create timer to send DMX universe.
+	vSemaphoreCreateBinary(xDMXSemaphore);
+  xTaskCreate(TASK_DMX, (signed portCHAR *)"DMX", configMINIMAL_STACK_SIZE, NULL, PRIORITY_TASK_DMX, NULL);
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// This task handles sending the DMX universe
+/////////////////////////////////////////////////////////////////////////////
+static void TASK_DMX(void *pvParameters)
+{
+  portTickType xLastExecutionTime;
+
+  // Initialise the xLastExecutionTime variable on task entry
+  xLastExecutionTime = xTaskGetTickCount();
+
+  while( 1 ) {
+    vTaskDelayUntil(&xLastExecutionTime, 35 / portTICK_RATE_MS);
+		if (dmx_state==DMX_IDLE)
+		{
+			//xSemaphoreTake(xDMXSemaphore, portMAX_DELAY); // Stop the universe from being changed while we are sending it.
+			dmx_state=DMX_BREAK;	// Signal ISR that break has been sent.
+			DMX->CR1 |= USART_FLAG_TC | ~USART_FLAG_TXE;		       // enable TC and disable TX interrupts.
+			DMX->BRR=break_baudrate_brr;		// Set baudrate to 90.9K so send break.
+			USART_SendBreak(DMX);						// Send break which starts the universe sending.
+			//xSemaphoreGive(xDMXSemaphore);
+		}
+  }
+}
+
+
+s32 DMX_SetChannel(u16 channel, u8 value)
+{
+	
+	if (channel<DMX_UNIVERSE_SIZE) {
+		while  (dmx_state==DMX_SENDING); // Block until DMX universe is sent.
+		//xSemaphoreTake(xDMXSemaphore, portMAX_DELAY);
+		dmx_tx_buffer[channel]=value;
+		//xSemaphoreGive(xDMXSemaphore);
+
+	}
+	else 
+		return -1;
+	return 0;
+	
+	}
+
+s32 DMX_GetChannel(u16 channel)
+{
+	if (channel<DMX_UNIVERSE_SIZE) {
+		u32 val=(s32)dmx_tx_buffer[channel];
+		return val;
+	}
+	else 
+		return -1;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Interrupt handler for DMX UART
+/////////////////////////////////////////////////////////////////////////////
+signed portBASE_TYPE x=pdFALSE;
+DMX_IRQHANDLER_FUNC
+{
+	if( DMX->SR & USART_FLAG_RXNE) { // check if RXNE flag is set
+    u8 b = DMX->DR;
+		// Clear interrupt
+		DMX->SR &= ~USART_FLAG_RXNE;	
+  }
+	
+	if (DMX->SR & USART_FLAG_TC) { // Transmission Complete flag
+		DMX->SR &= ~USART_FLAG_TC;	
+		// We have sent a break so set the baudrate back to 250K
+		// and send the start code.
+		if (dmx_state==DMX_BREAK) {
+			dmx_current_channel=0;
+			dmx_state=DMX_START_CODE;
+			DMX->BRR=dmx_baudrate_brr;		// Set baudrate to 250K to send universe
+			MIOS32_DELAY_Wait_uS(DMX_MAB_DELAY);	// Once break sent, send MAB 
+			DMX->CR1 |= USART_FLAG_TXE;	// Enable TX Interrupts	
+		}	else if ((dmx_state==DMX_SENDING) && (dmx_current_channel>=DMX_UNIVERSE_SIZE)) {
+			// We have finished sending the universe so disable interrupts and release semaphore.
+			//xSemaphoreGiveFromISR(xDMXSemaphore,&x);
+			MIOS32_BOARD_LED_Set(0xffffffff, ~MIOS32_BOARD_LED_Get());
+			DMX->CR1 &= ~USART_FLAG_TXE;		      // disable interrupts 
+			dmx_state=DMX_IDLE;
+		}
+		
+	}
+	if (DMX->SR & USART_FLAG_TXE) {
+		DMX->SR &= ~USART_FLAG_TXE;	          // clear interrupt
+		if (dmx_state==DMX_START_CODE) {
+			DMX->DR=0;
+			dmx_state=DMX_SENDING;
+		} else if ((dmx_state==DMX_SENDING) && (dmx_current_channel < DMX_UNIVERSE_SIZE)) {
+			s32 c=DMX_GetChannel(dmx_current_channel);
+			DMX->DR=c; 
+			dmx_current_channel++;
+		}
+	}
+}
+
+
+	
