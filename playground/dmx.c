@@ -34,7 +34,8 @@
 // Baudrate 30000 (measured with scope): Break ca. 200 uS, MAB ca. 80 uS
 
 #define DMX_IDLE	0
-#define DMX_SENDING	1
+#define DMX_BREAK	1
+#define DMX_SENDING	2
 
 #define DMX_TX_PORT     GPIOA
 #define DMX_TX_PIN      GPIO_Pin_9
@@ -139,6 +140,7 @@ static void TASK_DMX(void *pvParameters)
 		    DMX->SR &= ~USART_FLAG_TC;
 		    USART_ITConfig(DMX, USART_IT_TC, ENABLE); // enable TC interrupt - triggered when transmission of break/MAB is completed
 		    DMX->BRR=break_baudrate_brr;		// Set baudrate to 90.9K so send break/MAB
+		    dmx_state=DMX_BREAK;
 		    DMX->DR = 0x80;                           // start transmission (MSB used for MAB)
 		  }
 		}
@@ -180,7 +182,7 @@ s32 DMX_GetChannel(u16 channel)
 signed portBASE_TYPE x=pdFALSE;
 DMX_IRQHANDLER_FUNC
 {
-  if( DMX->SR & USART_FLAG_TC ) { // Transmission Complete flag
+  if( (dmx_state == DMX_BREAK) && DMX->SR & USART_FLAG_TC ) { // Transmission Complete flag
     // the combined break/MAB has been sent - disable TC interrupt, clear current TXE and enable TXE for next byte
     USART_ITConfig(DMX, USART_IT_TC, DISABLE);
     DMX->SR &= ~USART_FLAG_TXE;
