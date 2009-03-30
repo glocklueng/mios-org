@@ -182,7 +182,7 @@ s32 DMX_GetChannel(u16 channel)
 signed portBASE_TYPE x=pdFALSE;
 DMX_IRQHANDLER_FUNC
 {
-  if( (dmx_state == DMX_BREAK) && DMX->SR & USART_FLAG_TC ) { // Transmission Complete flag
+  if( (dmx_state == DMX_BREAK) && (DMX->SR & USART_FLAG_TC) ) { // Transmission Complete flag
     // the combined break/MAB has been sent - disable TC interrupt, clear current TXE and enable TXE for next byte
     USART_ITConfig(DMX, USART_IT_TC, DISABLE);
     DMX->SR &= ~USART_FLAG_TXE;
