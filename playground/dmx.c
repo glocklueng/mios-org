@@ -29,14 +29,12 @@
 
 #define DMX_UNIVERSE_SIZE	512
 #define DMX_BAUDRATE 250000
-#define BREAK_BAUDRATE 90900	// Baud rate used for sending a nice long break!
+#define BREAK_BAUDRATE 40000	// Baud rate used for sending a nice long break!
 //	ANSI Spec: Break: 176uS-352uS MAB 12uS-88uS IB-Gab < 32uS */
-#define DMX_MAB_DELAY		38
+// Baudrate 30000 (measured with scope): Break ca. 200 uS, MAB ca. 80 uS
 
 #define DMX_IDLE	0
-#define DMX_BREAK 1
-#define DMX_START_CODE 2
-#define DMX_SENDING	3
+#define DMX_SENDING	1
 
 #define DMX_TX_PORT     GPIOA
 #define DMX_TX_PIN      GPIO_Pin_9
@@ -113,7 +111,6 @@ s32 DMX_Init(u32 mode)
   NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
   NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
   NVIC_Init(&NVIC_InitStructure);
-  USART_ITConfig(DMX, USART_IT_RXNE, ENABLE);
 	USART_Cmd(DMX, ENABLE); 
 	dmx_state=DMX_IDLE;
 	dmx_current_channel=0;
@@ -138,11 +135,12 @@ static void TASK_DMX(void *pvParameters)
 		if (dmx_state==DMX_IDLE)
 		{
 		  if (xSemaphoreTake(xDMXSemaphore, 10)==pdTRUE) { // Stop the universe from being changed while we are sending it.
-				dmx_state=DMX_BREAK;	// Signal ISR that break has been sent.
-				DMX->CR1 |= USART_FLAG_TC | ~USART_FLAG_TXE;		       // enable TC and disable TX interrupts.
-				DMX->BRR=break_baudrate_brr;		// Set baudrate to 90.9K so send break.
-				USART_SendBreak(DMX);						// Send break which starts the universe sending.
-			}
+		    // send break and MAB with slow baudrate
+		    DMX->SR &= ~USART_FLAG_TC;
+		    USART_ITConfig(DMX, USART_IT_TC, ENABLE); // enable TC interrupt - triggered when transmission of break/MAB is completed
+		    DMX->BRR=break_baudrate_brr;		// Set baudrate to 90.9K so send break/MAB
+		    DMX->DR = 0x80;                           // start transmission (MSB used for MAB)
+		  }
 		}
   }
 }
@@ -182,38 +180,32 @@ s32 DMX_GetChannel(u16 channel)
 signed portBASE_TYPE x=pdFALSE;
 DMX_IRQHANDLER_FUNC
 {
-	if( DMX->SR & USART_FLAG_RXNE) { // check if RXNE flag is set
-    u8 b = DMX->DR;
+  if( DMX->SR & USART_FLAG_TC ) { // Transmission Complete flag
+    // the combined break/MAB has been sent - disable TC interrupt, clear current TXE and enable TXE for next byte
+    USART_ITConfig(DMX, USART_IT_TC, DISABLE);
+    DMX->SR &= ~USART_FLAG_TXE;
+    USART_ITConfig(DMX, USART_IT_TXE, ENABLE);
+
+    dmx_current_channel=0;
+    DMX->BRR=dmx_baudrate_brr;		// Set baudrate to 250K to send universe
+    DMX->DR = 0x00; // start code
+    dmx_state=DMX_SENDING;
   }
-	
-	if (DMX->SR & USART_FLAG_TC) { // Transmission Complete flag
-		DMX->SR &= ~USART_FLAG_TC;	
-		if (dmx_state==DMX_BREAK) {
-		// We have sent a break so set the baudrate back to 250K and send the MAB.
-			dmx_current_channel=0;
-			dmx_state=DMX_START_CODE;
-			DMX->BRR=dmx_baudrate_brr;		// Set baudrate to 250K to send universe
-			MIOS32_DELAY_Wait_uS(DMX_MAB_DELAY);	// Once break sent, send MAB 
-			DMX->CR1 |= USART_FLAG_TXE;	// Enable TX Interrupts	
-		}	else if ((dmx_state==DMX_SENDING) && (dmx_current_channel>=DMX_UNIVERSE_SIZE)) {
-			// We have finished sending the universe so disable interrupts and release semaphore.
-			MIOS32_BOARD_LED_Set(0xffffffff, ~MIOS32_BOARD_LED_Get());
-			DMX->CR1 &= ~USART_FLAG_TXE;		      // disable interrupts 
-			dmx_state=DMX_IDLE;
-			xSemaphoreGiveFromISR(xDMXSemaphore,&x);
-		}
-		
-	}
-	if (DMX->SR & USART_FLAG_TXE) {
-		if (dmx_state==DMX_START_CODE) {
-			DMX->DR=0;
-			dmx_state=DMX_SENDING;
-		} else if ((dmx_state==DMX_SENDING) && (dmx_current_channel < DMX_UNIVERSE_SIZE)) {
-			s32 c=DMX_GetChannel(dmx_current_channel);
-			DMX->DR=c; 
-			dmx_current_channel++;
-		}
-	}
+
+  if( DMX->SR & USART_FLAG_TXE ) {
+    // send next byte
+    if( (dmx_state==DMX_SENDING) && (dmx_current_channel < DMX_UNIVERSE_SIZE) ) {
+      s32 c=DMX_GetChannel(dmx_current_channel);
+      DMX->DR=c; 
+      dmx_current_channel++;
+    } else {
+      // all bytes have been sent
+      dmx_state = DMX_IDLE;
+      USART_ITConfig(DMX, USART_IT_TXE, DISABLE);
+      MIOS32_BOARD_LED_Set(0xffffffff, ~MIOS32_BOARD_LED_Get());
+      xSemaphoreGiveFromISR(xDMXSemaphore,&x);
+    }
+  }
 }
 
 
