@@ -109,7 +109,7 @@ s32 DMX_Init(u32 mode)
   NVIC_InitTypeDef NVIC_InitStructure;
 
   NVIC_InitStructure.NVIC_IRQChannel = DMX_IRQ_CHANNEL;
-  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = MIOS32_IRQ_UART_PRIORITY; // defined in mios32_irq.h
+  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 11; //MIOS32_IRQ_UART_PRIORITY; // defined in mios32_irq.h
   NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
   NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
   NVIC_Init(&NVIC_InitStructure);
@@ -137,12 +137,12 @@ static void TASK_DMX(void *pvParameters)
     vTaskDelayUntil(&xLastExecutionTime, 35 / portTICK_RATE_MS);
 		if (dmx_state==DMX_IDLE)
 		{
-		  xSemaphoreTake(xDMXSemaphore, portMAX_DELAY); // Stop the universe from being changed while we are sending it.
-			dmx_state=DMX_BREAK;	// Signal ISR that break has been sent.
-			DMX->CR1 |= USART_FLAG_TC | ~USART_FLAG_TXE;		       // enable TC and disable TX interrupts.
-			DMX->BRR=break_baudrate_brr;		// Set baudrate to 90.9K so send break.
-			USART_SendBreak(DMX);						// Send break which starts the universe sending.
-			xSemaphoreGive(xDMXSemaphore);
+		  if (xSemaphoreTake(xDMXSemaphore, 10)==pdTRUE) { // Stop the universe from being changed while we are sending it.
+				dmx_state=DMX_BREAK;	// Signal ISR that break has been sent.
+				DMX->CR1 |= USART_FLAG_TC | ~USART_FLAG_TXE;		       // enable TC and disable TX interrupts.
+				DMX->BRR=break_baudrate_brr;		// Set baudrate to 90.9K so send break.
+				USART_SendBreak(DMX);						// Send break which starts the universe sending.
+			}
 		}
   }
 }
@@ -152,11 +152,11 @@ s32 DMX_SetChannel(u16 channel, u8 value)
 {
 	
 	if (channel<DMX_UNIVERSE_SIZE) {
-		while  (dmx_state==DMX_SENDING); // Block until DMX universe is sent.
-		xSemaphoreTake(xDMXSemaphore, portMAX_DELAY);
-		dmx_tx_buffer[channel]=value;
-		xSemaphoreGive(xDMXSemaphore);
-
+			if (xSemaphoreTake(xDMXSemaphore, 1)==pdTRUE)
+			{
+				dmx_tx_buffer[channel]=value;
+				xSemaphoreGive(xDMXSemaphore);
+			}
 	}
 	else 
 		return -1;
@@ -184,15 +184,12 @@ DMX_IRQHANDLER_FUNC
 {
 	if( DMX->SR & USART_FLAG_RXNE) { // check if RXNE flag is set
     u8 b = DMX->DR;
-		// Clear interrupt
-    //		DMX->SR &= ~USART_FLAG_RXNE;	
   }
 	
 	if (DMX->SR & USART_FLAG_TC) { // Transmission Complete flag
 		DMX->SR &= ~USART_FLAG_TC;	
-		// We have sent a break so set the baudrate back to 250K
-		// and send the start code.
 		if (dmx_state==DMX_BREAK) {
+		// We have sent a break so set the baudrate back to 250K and send the MAB.
 			dmx_current_channel=0;
 			dmx_state=DMX_START_CODE;
 			DMX->BRR=dmx_baudrate_brr;		// Set baudrate to 250K to send universe
@@ -200,15 +197,14 @@ DMX_IRQHANDLER_FUNC
 			DMX->CR1 |= USART_FLAG_TXE;	// Enable TX Interrupts	
 		}	else if ((dmx_state==DMX_SENDING) && (dmx_current_channel>=DMX_UNIVERSE_SIZE)) {
 			// We have finished sending the universe so disable interrupts and release semaphore.
-			xSemaphoreGiveFromISR(xDMXSemaphore,&x);
 			MIOS32_BOARD_LED_Set(0xffffffff, ~MIOS32_BOARD_LED_Get());
 			DMX->CR1 &= ~USART_FLAG_TXE;		      // disable interrupts 
 			dmx_state=DMX_IDLE;
+			xSemaphoreGiveFromISR(xDMXSemaphore,&x);
 		}
 		
 	}
 	if (DMX->SR & USART_FLAG_TXE) {
-	  //		DMX->SR &= ~USART_FLAG_TXE;	          // clear interrupt
 		if (dmx_state==DMX_START_CODE) {
 			DMX->DR=0;
 			dmx_state=DMX_SENDING;
